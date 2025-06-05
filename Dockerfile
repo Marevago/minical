@@ -15,7 +15,10 @@ RUN apt-get update && apt-get install -y \
 # Install composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Configure nginx
+# Configure nginx - Remove default config and add ours
+RUN rm -f /etc/nginx/conf.d/default.conf \
+    && rm -f /etc/nginx/sites-enabled/default \
+    && rm -f /etc/nginx/sites-available/default
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Configure PHP
