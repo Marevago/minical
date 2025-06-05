@@ -1,9 +1,26 @@
 {
+  "name": "minical/minical",
+  "description": "Open-source Property Management System",
+  "type": "project",
   "require": {
-  	"stripe/stripe-php": "^7.77",
+    "php": ">=7.4",
+    "stripe/stripe-php": "^7.77",
     "vlucas/phpdotenv": "^4.2",
     "lifenpag/asaas-php": "^1.0",
     "friendsofphp/php-cs-fixer": "^3.0",
     "sonata-project/google-authenticator": "^2.3"
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "preferred-install": "dist",
+    "sort-packages": true
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true,
+  "scripts": {
+    "post-install-cmd": [
+      "chmod -R 755 api/application/logs",
+      "chmod -R 755 api/application/cache"
+    ]
   }
 }
