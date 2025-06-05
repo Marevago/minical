@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libzip-dev \
     unzip \
+    git \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) gd pdo pdo_mysql mysqli zip
 
@@ -22,10 +23,17 @@ RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
 # Create directory structure
 WORKDIR /var/www/html
+COPY composer.* ./
+
+# Install dependencies first (for better caching)
+RUN composer install --no-dev --no-scripts --no-autoloader
+
+# Copy the rest of the application
 COPY . .
 
-# Install dependencies
-RUN composer install --no-dev --optimize-autoloader
+# Generate optimized autoloader and run scripts
+RUN composer dump-autoload --optimize && \
+    composer run-script post-install-cmd --no-dev
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
