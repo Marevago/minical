@@ -9,17 +9,12 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     unzip \
     git \
+    gettext-base \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) gd pdo pdo_mysql mysqli zip
 
 # Install composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Set up directory structure
-RUN mkdir -p /var/www/html/public \
-    && mkdir -p /var/www/html/api/application/logs \
-    && mkdir -p /var/www/html/api/application/cache \
-    && chown -R www-data:www-data /var/www/html
 
 # Configure nginx
 RUN rm -f /etc/nginx/conf.d/default.conf \
@@ -35,14 +30,8 @@ WORKDIR /var/www/html
 # Copy application files
 COPY . .
 
-# Create .env from environment variables
-RUN echo "DATABASE_HOST=\${DATABASE_HOST}" > .env \
-    && echo "DATABASE_USER=\${DATABASE_USER}" >> .env \
-    && echo "DATABASE_PASS=\${DATABASE_PASS}" >> .env \
-    && echo "DATABASE_NAME=\${DATABASE_NAME}" >> .env \
-    && echo "ENVIRONMENT=production" >> .env \
-    && echo "PROJECT_URL=https://\${RAILWAY_PUBLIC_DOMAIN}/public" >> .env \
-    && echo "API_URL=https://\${RAILWAY_PUBLIC_DOMAIN}/api" >> .env
+# Process environment variables in .env file
+RUN envsubst < .env > .env.tmp && mv .env.tmp .env
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
