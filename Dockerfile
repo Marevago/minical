@@ -9,7 +9,6 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     unzip \
     git \
-    gettext-base \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) gd pdo pdo_mysql mysqli zip
 
@@ -30,14 +29,9 @@ WORKDIR /var/www/html
 # Copy application files
 COPY . .
 
-# Process environment variables in .env file
-RUN envsubst < .env > .env.tmp && mv .env.tmp .env
-
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html \
-    && chmod -R 777 /var/www/html/api/application/logs \
-    && chmod -R 777 /var/www/html/api/application/cache
+    && chmod -R 755 /var/www/html
 
 # Expose port
 EXPOSE 80
