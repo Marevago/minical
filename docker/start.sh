@@ -1,12 +1,44 @@
 #!/bin/bash
 
 echo "=== Environment Setup ==="
-# Substituir variáveis de ambiente no .env
-envsubst < .env > .env.tmp && mv .env.tmp .env
+# Criar novo arquivo .env com as variáveis do ambiente
+cat > /var/www/html/.env << EOF
+DATABASE_HOST=${DATABASE_HOST}
+DATABASE_USER=${DATABASE_USER}
+DATABASE_PASS=${DATABASE_PASS}
+DATABASE_NAME=${DATABASE_NAME}
+
+ENVIRONMENT=production
+
+PROJECT_URL=https://${RAILWAY_STATIC_URL}/public
+API_URL=https://${RAILWAY_STATIC_URL}/api
+
+# AWS info (opcional, pode deixar vazio por enquanto)
+AWS_ACCESS_KEY=
+AWS_SECRET_KEY=
+AWS_S3_BUCKET=
+
+# SMTP info (opcional, pode deixar vazio por enquanto)
+SMTP_USER=
+SMTP_PASS=
+SMTP_HOST=
+SMTP_PORT=
+SMTP_CRYPTO=
+
+# Captcha info (opcional, pode deixar vazio por enquanto)
+RECAPTCHA_SITE_KEY=
+RECAPTCHA_SECRET_KEY=
+EOF
 
 echo "=== Environment Check ==="
 echo "Current .env file:"
-cat .env
+cat /var/www/html/.env
+
+echo "=== Environment Variables ==="
+echo "DATABASE_HOST: ${DATABASE_HOST}"
+echo "DATABASE_USER: ${DATABASE_USER}"
+echo "DATABASE_NAME: ${DATABASE_NAME}"
+echo "RAILWAY_STATIC_URL: ${RAILWAY_STATIC_URL}"
 
 echo "=== Directory Structure ==="
 ls -la /var/www/html
