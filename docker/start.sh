@@ -2,41 +2,38 @@
 
 echo "Starting initialization..."
 
-# Garantir que os diretórios de logs existam
-echo "Creating log directories..."
+# Create test file
+echo "Creating test file..."
+echo "Server is running" > /var/www/html/public/test.html
+chmod 644 /var/www/html/public/test.html
+
+# Create and set permissions for directories
+echo "Setting up directories..."
+mkdir -p /var/www/html/public
 mkdir -p /var/www/html/api/application/logs
 mkdir -p /var/www/html/api/application/cache
 mkdir -p /var/log/nginx
 
-# Definir permissões corretas
+# Set permissions
 echo "Setting permissions..."
 chown -R www-data:www-data /var/www/html
-chmod -R 755 /var/www/html/api/application/logs
-chmod -R 755 /var/www/html/api/application/cache
-chmod -R 755 /var/log/nginx
+chmod -R 755 /var/www/html
 
-# Verificar configuração do nginx
+# Test nginx configuration
 echo "Testing nginx configuration..."
 nginx -t
 
-# Iniciar PHP-FPM em background
+# Start PHP-FPM
 echo "Starting PHP-FPM..."
 php-fpm -D
 
-# Verificar se o PHP-FPM iniciou corretamente
-if [ $? -ne 0 ]; then
-    echo "Failed to start PHP-FPM"
-    exit 1
-fi
+# Check PHP-FPM
+echo "Checking PHP-FPM status..."
+ps aux | grep php-fpm
 
-# Remover qualquer arquivo de pid antigo do nginx
-echo "Cleaning up old nginx pid..."
+# Remove old nginx pid if it exists
 rm -f /var/run/nginx.pid
 
-# Mostrar a configuração atual do nginx
-echo "Current nginx configuration:"
-cat /etc/nginx/conf.d/default.conf
-
-# Iniciar Nginx em foreground com debug
+# Start nginx
 echo "Starting nginx..."
-nginx -g "daemon off; error_log /dev/stderr debug;"
+exec nginx -g 'daemon off;'
