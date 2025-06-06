@@ -1,23 +1,21 @@
 #!/bin/bash
 
-echo "=== Starting initialization ==="
+echo "=== Environment Information ==="
+echo "PORT: $PORT"
+echo "PWD: $(pwd)"
+echo "Directory contents:"
+ls -la
 
-echo "Current directory structure:"
-ls -la /var/www/html
-echo "Public directory:"
-ls -la /var/www/html/public
-
-echo "=== Checking PHP-FPM ==="
-php-fpm -v
+# Substituir a porta no nginx
+echo "=== Configuring Nginx ==="
+sed -i "s/\${PORT:-80}/$PORT/g" /etc/nginx/conf.d/default.conf
 
 echo "=== Starting PHP-FPM ==="
 php-fpm -D
 
-echo "=== Checking nginx configuration ==="
+echo "=== Nginx Configuration ==="
 nginx -t
-
-echo "=== Nginx configuration content ==="
 cat /etc/nginx/conf.d/default.conf
 
-echo "=== Starting nginx ==="
+echo "=== Starting Nginx ==="
 nginx -g 'daemon off;'
