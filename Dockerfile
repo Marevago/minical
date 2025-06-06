@@ -15,38 +15,42 @@ RUN apt-get update && apt-get install -y \
 # Install composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Configure nginx - Remove default config and add ours
+# Set up directory structure
+RUN mkdir -p /var/www/html/public \
+    && mkdir -p /var/www/html/api/application/logs \
+    && mkdir -p /var/www/html/api/application/cache \
+    && chown -R www-data:www-data /var/www/html
+
+# Configure nginx - Remove default config
 RUN rm -f /etc/nginx/conf.d/default.conf \
     && rm -f /etc/nginx/sites-enabled/default \
     && rm -f /etc/nginx/sites-available/default
+
+# Copy nginx configuration
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Configure PHP
-RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+COPY docker/php.ini /usr/local/etc/php/php.ini
 
-# Create directory structure
+# Set working directory
 WORKDIR /var/www/html
-COPY composer.* ./
 
-# Install dependencies first (for better caching)
-RUN composer install --no-dev --no-scripts --no-autoloader
-
-# Copy the rest of the application
+# Copy application files
 COPY . .
 
-# Generate optimized autoloader and run scripts
-RUN composer dump-autoload --optimize && \
-    composer run-script post-install-cmd --no-dev
+# Create a test file
+RUN echo "<?php phpinfo(); ?>" > /var/www/html/public/info.php \
+    && echo "Hello World" > /var/www/html/public/test.html
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/api/application/logs \
-    && chmod -R 755 /var/www/html/api/application/cache
+    && chmod -R 755 /var/www/html
 
-# Start script
+# Expose port
+EXPOSE 80
+
+# Copy and set up start script
 COPY docker/start.sh /start.sh
 RUN chmod +x /start.sh
-
-EXPOSE 80
 
 CMD ["/start.sh"]
